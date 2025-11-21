@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hesap Makinesi</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin:0; font-family: 'Roboto', sans-serif;
+    display:flex; justify-content:center; align-items:center;
+    min-height:100vh;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+  }
+  .container {
+    background:#fff; border-radius:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.3);
+    width:95%; max-width:450px; padding:25px;
+  }
+  h2 { text-align:center; margin-bottom:20px; color:#333; }
+  input, select, button {
+    width:100%; padding:12px; margin:8px 0;
+    font-size:16px; border-radius:12px; border:1px solid #ccc;
+    box-sizing:border-box; transition: all 0.3s;
+  }
+  input:focus { border-color:#4CAF50; outline:none; }
+  button {
+    background-color:#4CAF50; color:white; border:none; cursor:pointer; font-weight:bold;
+    box-shadow:0 4px #39933c;
+  }
+  button:hover { background-color:#45a049; transform: scale(1.05); }
+  button:active { box-shadow:0 2px #39933c; transform: translateY(2px); }
+  #sonuc { font-weight:bold; font-size:18px; margin-top:10px; color:#222; }
+  #gecmis { margin-top:10px; max-height:150px; overflow-y:auto; text-align:left; border-top:1px solid #ccc; padding-top:5px; font-size:14px; color:#333; }
+  .memory-buttons button { width:30%; display:inline-block; margin:5px 1%; }
+  @media(max-width:500px){
+    .container { width:95%; padding:15px; }
+    input, select, button { font-size:16px; margin:5px 0; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>Hesap Makinesi</h2>
+  
+  <input id="sayi1" placeholder="Sayı veya ifade">
+  <input id="sayi2" placeholder="Opsiyonel ikinci sayı">
+  <select id="islem">
+    <option value="manual">Manuel ifade</option>
+    <option value="toplama">Toplama</option>
+    <option value="çıkarma">Çıkarma</option>
+    <option value="çarpma">Çarpma</option>
+    <option value="bölme">Bölme</option>
+    <option value="üs">Üs</option>
+    <option value="mod">Mod</option>
+    <option value="karekök">Karekök</option>
+    <option value="faktöriyel">Faktöriyel</option>
+    <option value="sin">Sin</option>
+    <option value="cos">Cos</option>
+    <option value="tan">Tan</option>
+    <option value="log">Log</option>
+  </select>
+  <select id="angleMode">
+    <option value="degree">Derece</option>
+    <option value="radian">Radyan</option>
+  </select>
+  <button onclick="hesapla()">Hesapla</button>
+  
+  <p id="sonuc"></p>
+  <div id="gecmis"></div>
+
+  <div class="memory-buttons">
+    <button onclick="mEkle()">M+</button>
+    <button onclick="mCikar()">M-</button>
+    <button onclick="mOku()">MR</button>
+    <button onclick="mKaydet()">MS</button>
+    <button onclick="mTemizle()">MC</button>
+  </div>
+  <p>Hafıza: <span id="hafiza">0</span></p>
+</div>
+
+<script>
+let gecmis = [];
+let hafiza = 0;
+let msValue = 0;
+
+function hesapla(){
+  let a = document.getElementById("sayi1").value;
+  let bInput = document.getElementById("sayi2").value;
+  let islem = document.getElementById("islem").value;
+  let angle = document.getElementById("angleMode").value;
+  let sonuc;
+  try{
+    if(islem=="manual"){ sonuc = eval(a); } 
+    else{
+      let aNum = parseFloat(a);
+      let bNum = bInput ? parseFloat(bInput) : 0;
+      if(isNaN(aNum) || (bInput && isNaN(bNum))) { alert("Geçerli sayı girin!"); return; }
+      switch(islem){
+        case "toplama": sonuc = aNum+bNum; break;
+        case "çıkarma": sonuc = aNum-bNum; break;
+        case "çarpma": sonuc = aNum*bNum; break;
+        case "bölme": if(bNum===0){ alert("0'a bölme hatası!"); return; } sonuc=aNum/bNum; break;
+        case "üs": sonuc=Math.pow(aNum,bNum); break;
+        case "mod": sonuc=aNum%bNum; break;
+        case "karekök": sonuc=Math.sqrt(aNum); break;
+        case "faktöriyel": sonuc=1; for(let i=1;i<=aNum;i++) sonuc*=i; break;
+        case "sin": sonuc=Math.sin(aNum*Math.PI/180); break;
+        case "cos": sonuc=Math.cos(aNum*Math.PI/180); break;
+        case "tan": sonuc=Math.tan(aNum*Math.PI/180); break;
+        case "log": sonuc=Math.log10(aNum); break;
+        default: sonuc="Geçersiz işlem"; break;
+      }
+    }
+    document.getElementById("sonuc").innerText = "Sonuç: "+sonuc;
+    gecmis.push(`${islem}: ${a}${bInput?','+bInput:''} = ${sonuc}`);
+    document.getElementById("gecmis").innerHTML = gecmis.join('<br>');
+  }catch(e){ alert("Hatalı ifade!"); }
+}
+
+// Hafıza fonksiyonları
+function mEkle(){ hafiza += parseFloat(document.getElementById("sonuc").innerText.replace("Sonuç:","")) || 0; document.getElementById("hafiza").innerText = hafiza; }
+function mCikar(){ hafiza -= parseFloat(document.getElementById("sonuc").innerText.replace("Sonuç:","")) || 0; document.getElementById("hafiza").innerText = hafiza; }
+function mOku(){ document.getElementById("sayi1").value = hafiza; }
+function mTemizle(){ hafiza=0; msValue=0; document.getElementById("hafiza").innerText=hafiza; }
+function mKaydet(){ msValue = parseFloat(document.getElementById("sonuc").innerText.replace("Sonuç:","")) || 0; alert("MS kaydedildi: "+msValue); }
+</script>
+</body>
+</html>
